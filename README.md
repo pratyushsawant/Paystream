@@ -67,14 +67,7 @@ ETHDenver/
 
 ---
 
-## Discrete Repositories
 
-| Repo | Link |
-|------|------|
-| Frontend | [github.com/pratyushsawant/Paystream_Frontend](https://github.com/pratyushsawant/Paystream_Frontend) |
-| Backend | [github.com/pratyushsawant/Paystream_Backend](https://github.com/pratyushsawant/Paystream_Backend) |
-
----
 
 ## Tech Stack
 
