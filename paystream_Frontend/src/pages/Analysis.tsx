@@ -182,7 +182,7 @@ const Analysis = () => {
     setRemainingBudget(budget);
     setPhase('fetching');
 
-    const apiUrl = 'http://localhost:3001/api/analyze?repo=' + encodeURIComponent(url) + '&budget=' + budget;
+    const apiUrl = import.meta.env.VITE_API_URL + '/api/analyze?repo=' + encodeURIComponent(url) + '&budget=' + budget;
     const es = new EventSource(apiUrl);
 
     es.onmessage = (e) => {

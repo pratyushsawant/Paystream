@@ -90,7 +90,7 @@ export default function Index() {
     setSteps([]); setFinalReport(""); setRefundAmount(0);
     setRefundTxId(""); setErrorMsg(""); setPhase("running"); setActiveTab("report");
 
-    const url = `http://localhost:3001/api/run?task=${encodeURIComponent(taskToRun)}&budget=${budget}`;
+    const url = `${import.meta.env.VITE_API_URL}/api/run?task=${encodeURIComponent(taskToRun)}&budget=${budget}`;
     const es = new EventSource(url);
 
     es.onmessage = (e) => {

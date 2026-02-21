@@ -17,7 +17,18 @@ const { saveReport, getReport } = require('./mongoService');
 const app  = express();
 const PORT = 3001;
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:8080',
+    'http://localhost:8081',
+    'http://localhost:5173',
+    /\.onrender\.com$/,       // any Render deployment
+    /\.vercel\.app$/,         // any Vercel deployment
+    /\.netlify\.app$/,        // any Netlify deployment
+  ],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: true,
+}));
 app.use(express.json());
 
 // ─────────────────────────────────────────────

@@ -59,7 +59,7 @@ const ShareReport = () => {
 
   useEffect(() => {
     if (!shareId) { setError('No report ID provided.'); setLoading(false); return; }
-    fetch('http://localhost:3001/api/report/' + shareId)
+    fetch(import.meta.env.VITE_API_URL + '/api/report/' + shareId)
       .then((r) => {
         if (!r.ok) throw new Error(r.status === 404 ? 'Report not found or expired.' : 'Failed to load report.');
         return r.json();
