@@ -1,7 +1,39 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "WebSearch",
+      "Bash(npm install)",
+      "Bash(cd /Users/aditya/Dev/denverhack/Paystream/paystream_Frontend && npm install mermaid 2>&1 | tail -4)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx tsc --noEmit 2>&1)",
+      "Bash(./node_modules/.bin/tsc --noEmit 2>&1)",
+      "Bash(./node_modules/.bin/vite build 2>&1 | head -50)",
+      "Bash(./node_modules/.bin/vite build 2>&1 | tail -10)",
+      "Bash(pkill -f \"node server.js\" 2>/dev/null; pkill -f \"vite\" 2>/dev/null; sleep 1; echo \"killed\")",
+      "Bash(curl -s http://localhost:3001/api/health)",
+      "Bash(curl -s http://localhost:3001/api/health && echo \"\" && lsof -i :3001 | head -5)",
+      "Bash(kill -9 48461 2>/dev/null; kill -9 95059 2>/dev/null; sleep 1 && lsof -i :3001 | head -3 || echo \"port 3001 is free\")",
+      "Bash(lsof -i :3001 2>/dev/null | head -3 || echo \"port 3001 is free\")",
+      "Bash(pkill -f \"node.*server.js\" 2>/dev/null; pkill -f \"vite\" 2>/dev/null; sleep 1; echo \"killed all\")",
+      "Bash(node -e \"require\\('dotenv'\\).config\\({ path: '/Users/aditya/Dev/denverhack/Paystream/paystream_Backend/.env' }\\); console.log\\('TOKEN:', process.env.GITHUB_TOKEN ? 'FOUND \\(' + process.env.GITHUB_TOKEN.slice\\(0,8\\) + '...\\)' : 'MISSING'\\)\")",
+      "Bash(cd /Users/aditya/Dev/denverhack/Paystream/paystream_Backend && node -e \"require\\('dotenv'\\).config\\(\\); console.log\\('TOKEN:', process.env.GITHUB_TOKEN ? 'FOUND \\(' + process.env.GITHUB_TOKEN.slice\\(0,8\\) + '...\\)' : 'MISSING'\\)\")",
+      "Bash(./node_modules/.bin/vite build 2>&1 | tail -5)",
+      "Bash(cd /Users/aditya/Dev/denverhack/Paystream/paystream_Frontend && ./node_modules/.bin/vite build 2>&1 | tail -5)",
+      "Bash(pkill -f \"node.*server.js\" 2>/dev/null; sleep 1; echo \"killed\")",
+      "Bash(curl -sN --max-time 30 \"http://localhost:3001/api/analyze?repo=https://github.com/expressjs/express&budget=1\" 2>&1 | head -50)",
+      "Bash(cd /Users/aditya/Dev/denverhack/Paystream/paystream_Frontend && npx tsc --noEmit 2>&1 | head -30)",
+      "Bash(pgrep -fl \"vite\" | head -5)",
+      "Bash(cd /Users/aditya/Dev/denverhack/Paystream/paystream_Frontend && git fetch origin byPratyush && git show origin/byPratyush --stat | head -60)",
+      "Bash(cat package.json | python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('framer-motion' in d['dependencies'], '@react-three/fiber' in d['dependencies'], 'three' in d['dependencies']\\)\")",
+      "Bash(npm install framer-motion @react-three/fiber@8 @react-three/drei@9 three 2>&1 | tail -10)",
+      "Bash(node -e \"require\\('./node_modules/framer-motion/dist/cjs/index.js'\\); console.log\\('ok'\\)\" 2>&1 | head -3)",
+      "Bash(npx vite build --mode development 2>&1 | tail -20)",
+      "Bash(node -e \"require\\('mongoose'\\); console.log\\('mongoose ok'\\)\")",
+      "Bash(cd /Users/aditya/Dev/denverhack/Paystream/paystream_Frontend && npx vite build --mode development 2>&1 | tail -8)",
+      "Bash(cd /Users/aditya/Dev/denverhack/Paystream/paystream_Backend && node --check server.js && node --check mongoService.js && node --check codebaseAgentService.js && echo \"all ok\")",
+      "Bash(mongosh --eval \"db.runCommand\\({ ping: 1 }\\)\" --quiet 2>&1 | head -5)",
+      "Bash(lsof -ti :5173 2>&1 | head -3)",
+      "Bash(curl -s http://localhost:3001/api/report/afe8c6c8800b48e9 | python3 -c \"\nimport json, sys\nd = json.load\\(sys.stdin\\)\nprint\\('repoName:', d.get\\('repoName'\\)\\)\nprint\\('fileCount:', d.get\\('meta',{}\\).get\\('fileCount'\\)\\)\nprint\\('languages:', d.get\\('meta',{}\\).get\\('languages'\\)\\)\nprint\\('codeReader keys:', list\\(d.get\\('data',{}\\).get\\('codeReader',{}\\).keys\\(\\)\\)\\)\nprint\\('slides count:', len\\(d.get\\('data',{}\\).get\\('analogy',{}\\).get\\('ceoSlides',[]\\)\\)\\)\nprint\\('redFlags count:', len\\(d.get\\('data',{}\\).get\\('insight',{}\\).get\\('redFlags',[]\\)\\)\\)\n\")"
     ]
   }
 }
