@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayStream POC</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #080b10;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse 60% 40% at 20% 20%, rgba(0,255,128,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 80% 80%, rgba(0,180,255,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #00ff88;
+    letter-spacing: 4px;
+    text-align: center;
+    margin-bottom: 6px;
+    text-shadow: 0 0 30px rgba(0,255,136,0.4);
+  }
+
+  .subtitle {
+    color: #4a6a5a;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-align: center;
+    margin-bottom: 50px;
+    text-transform: uppercase;
+  }
+
+  .diagram {
+    width: 100%;
+    max-width: 1100px;
+    position: relative;
+  }
+
+  /* ROW LAYOUTS */
+  .row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 0;
+    position: relative;
+  }
+
+  /* NODES */
+  .node {
+    border-radius: 10px;
+    padding: 14px 18px;
+    position: relative;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .node:hover { transform: translateY(-2px); }
+
+  .node .icon { font-size: 20px; margin-bottom: 6px; }
+  .node .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+  .node .sublabel {
+    font-size: 10px;
+    opacity: 0.6;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+  .node .amount {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  /* NODE TYPES */
+  .node-user {
+    background: linear-gradient(135deg, #0d2a1a, #0a1f14);
+    border: 1.5px solid #00ff88;
+    box-shadow: 0 0 20px rgba(0,255,136,0.15), inset 0 0 20px rgba(0,255,136,0.03);
+    color: #00ff88;
+    min-width: 160px;
+  }
+
+  .node-agent {
+    background: linear-gradient(135deg, #0a1a2e, #071525);
+    border: 1.5px solid #00aaff;
+    box-shadow: 0 0 20px rgba(0,170,255,0.15), inset 0 0 20px rgba(0,170,255,0.03);
+    color: #00aaff;
+    min-width: 160px;
+  }
+
+  .node-schedule {
+    background: linear-gradient(135deg, #1a1200, #130e00);
+    border: 1.5px solid #ffaa00;
+    box-shadow: 0 0 20px rgba(255,170,0,0.15);
+    color: #ffaa00;
+    min-width: 150px;
+  }
+
+  .node-sub {
+    background: linear-gradient(135deg, #1a0a2e, #130720);
+    border: 1.5px solid #aa55ff;
+    box-shadow: 0 0 20px rgba(170,85,255,0.15);
+    color: #aa55ff;
+    min-width: 140px;
+  }
+
+  .node-hcs {
+    background: linear-gradient(135deg, #101520, #0a1018);
+    border: 1.5px solid #4488bb;
+    box-shadow: 0 0 15px rgba(68,136,187,0.1);
+    color: #4488bb;
+    min-width: 130px;
+    font-size: 10px;
+  }
+  .node-hcs .label { font-size: 10px; }
+  .node-hcs .sublabel { font-size: 9px; }
+
+  .node-ledger {
+    background: linear-gradient(135deg, #1a0a0a, #130707);
+    border: 1.5px solid #ff4455;
+    box-shadow: 0 0 20px rgba(255,68,85,0.15);
+    color: #ff4455;
+    min-width: 200px;
+  }
+
+  /* CONNECTOR LINES */
+  svg.connectors {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .connector {
+    fill: none;
+    stroke-width: 1.5;
+    stroke-dasharray: 6,3;
+    animation: dash 2s linear infinite;
+  }
+  .connector-green { stroke: rgba(0,255,136,0.5); }
+  .connector-blue { stroke: rgba(0,170,255,0.5); }
+  .connector-purple { stroke: rgba(170,85,255,0.5); }
+  .connector-orange { stroke: rgba(255,170,0,0.5); }
+  .connector-red { stroke: rgba(255,68,85,0.5); }
+  .connector-teal { stroke: rgba(68,136,187,0.4); }
+
+  @keyframes dash {
+    to { stroke-dashoffset: -18; }
+  }
+
+  /* ARROW LABELS */
+  .arrow-label {
+    position: absolute;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+    z-index: 10;
+  }
+  .al-green { color: #00ff88; background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); }
+  .al-orange { color: #ffaa00; background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.2); }
+  .al-purple { color: #aa55ff; background: rgba(170,85,255,0.08); border: 1px solid rgba(170,85,255,0.2); }
+  .al-red { color: #ff4455; background: rgba(255,68,85,0.08); border: 1px solid rgba(255,68,85,0.2); }
+  .al-blue { color: #00aaff; background: rgba(0,170,255,0.08); border: 1px solid rgba(0,170,255,0.2); }
+
+  /* SECTION LABELS */
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #2a3a2a;
+    text-align: center;
+    margin: 8px 0;
+  }
+
+  /* BOUNTY BADGES */
+  .bounties {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 40px;
+  }
+  .bounty {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .b1 { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.3); color: #00ff88; }
+  .b2 { background: rgba(0,170,255,0.08); border: 1px solid rgba(0,170,255,0.3); color: #00aaff; }
+  .b3 { background: rgba(170,85,255,0.08); border: 1px solid rgba(170,85,255,0.3); color: #aa55ff; }
+  .b4 { background: rgba(255,170,0,0.08); border: 1px solid rgba(255,170,0,0.3); color: #ffaa00; }
+  .b5 { background: rgba(255,68,85,0.08); border: 1px solid rgba(255,68,85,0.3); color: #ff4455; }
+
+  /* VERTICAL SPACER */
+  .spacer { height: 50px; }
+  .spacer-sm { height: 30px; }
+
+  /* MULTI AGENT ROW */
+  .multi-agent-box {
+    border: 1px dashed rgba(170,85,255,0.3);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    background: rgba(170,85,255,0.02);
+  }
+  .multi-agent-box .box-label {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #080b10;
+    padding: 0 10px;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: rgba(170,85,255,0.6);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .sub-agents-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .sub-agent-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* STEP BADGE */
+  .step-badge {
+    font-size: 9px;
+    color: rgba(170,85,255,0.5);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .cost-badge {
+    font-size: 9px;
+    color: #ffaa00;
+    background: rgba(255,170,0,0.08);
+    border: 1px solid rgba(255,170,0,0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+
+  /* FLOW WRAPPER */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1100px;
+    gap: 0;
+  }
+
+  .arrow-down {
+    width: 1.5px;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(0,255,136,0.4), rgba(0,255,136,0.1));
+    position: relative;
+  }
+  .arrow-down::after {
+    content: '▼';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: rgba(0,255,136,0.4);
+  }
+
+  .arrow-down-blue {
+    background: linear-gradient(to bottom, rgba(0,170,255,0.4), rgba(0,170,255,0.1));
+  }
+  .arrow-down-blue::after { color: rgba(0,170,255,0.4); }
+
+  .arrow-down-purple {
+    background: linear-gradient(to bottom, rgba(170,85,255,0.4), rgba(170,85,255,0.1));
+  }
+  .arrow-down-purple::after { color: rgba(170,85,255,0.4); }
+
+  .arrow-down-orange {
+    background: linear-gradient(to bottom, rgba(255,170,0,0.4), rgba(255,170,0,0.1));
+  }
+  .arrow-down-orange::after { color: rgba(255,170,0,0.4); }
+
+  .split-arrows {
+    display: flex;
+    width: 80%;
+    justify-content: space-around;
+    position: relative;
+    height: 50px;
+    align-items: flex-end;
+  }
+  .split-arrows::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 16%;
+    right: 16%;
+    height: 1.5px;
+    background: rgba(170,85,255,0.3);
+  }
+
+  .split-arrow-down {
+    width: 1.5px;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(170,85,255,0.4), rgba(170,85,255,0.1));
+    position: relative;
+  }
+  .split-arrow-down::after {
+    content: '▼';
+    position: absolute;
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    color: rgba(170,85,255,0.4);
+  }
+
+  .merge-arrows {
+    display: flex;
+    width: 80%;
+    justify-content: space-around;
+    position: relative;
+    height: 50px;
+    align-items: flex-start;
+  }
+  .merge-arrows::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 16%;
+    right: 16%;
+    height: 1.5px;
+    background: rgba(255,68,85,0.3);
+  }
+
+  .merge-arrow-up {
+    width: 1.5px;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(170,85,255,0.1), rgba(255,68,85,0.4));
+  }
+
+  .arrow-label-side {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .two-col {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .two-col-left, .two-col-right {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .side-label {
+    writing-mode: horizontal-tb;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: rgba(255,170,0,0.5);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>PAYSTREAM</h1>
+<div class="subtitle">Multi-Agent Economy on Hedera — POC Architecture</div>
+
+<div class="flow">
+
+  <!-- USER WALLET -->
+  <div class="node node-user">
+    <div class="icon">👤</div>
+    <div class="label">User Wallet</div>
+    <div class="amount">1000 HBAR</div>
+    <div class="sublabel">Starting balance</div>
+  </div>
+
+  <!-- Arrow down + schedule side -->
+  <div style="display:flex; align-items:flex-start; gap:30px; margin: 8px 0;">
+    <div style="display:flex; flex-direction:column; align-items:center;">
+      <div style="font-size:9px; color:rgba(0,255,136,0.5); letter-spacing:2px; margin-bottom:4px;">① FUND 1 HBAR</div>
+      <div class="arrow-down" style="height:60px;"></div>
+    </div>
+    <div style="margin-top:20px; display:flex; flex-direction:column; align-items:center; gap:6px;">
+      <div style="font-size:9px; color:rgba(255,170,0,0.5); letter-spacing:2px;">② SCHEDULE</div>
+      <div class="node node-schedule" style="min-width:160px;">
+        <div class="icon">⏰</div>
+        <div class="label">Scheduled TX</div>
+        <div class="sublabel">Auto-refund after 10min</div>
+        <div class="sublabel" style="color:rgba(255,170,0,0.4); margin-top:4px; font-size:9px;">ON-CHAIN TIMER</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN AGENT -->
+  <div class="node node-agent" style="min-width:200px;">
+    <div class="icon">🤖</div>
+    <div class="label">Main Agent</div>
+    <div class="sublabel">Receives 1 HBAR budget</div>
+    <div class="sublabel" style="color:rgba(0,170,255,0.4); margin-top:4px; font-size:9px;">Orchestrator</div>
+  </div>
+
+  <!-- Split to sub agents -->
+  <div style="margin: 8px 0; text-align:center;">
+    <div style="font-size:9px; color:rgba(170,85,255,0.5); letter-spacing:2px; margin-bottom:6px;">③ HIRES &amp; PAYS SUB-AGENTS</div>
+    <div class="split-arrows">
+      <div class="split-arrow-down"></div>
+      <div class="split-arrow-down"></div>
+      <div class="split-arrow-down"></div>
+    </div>
+  </div>
+
+  <!-- SUB AGENTS -->
+  <div class="multi-agent-box" style="width:90%; max-width:900px;">
+    <div class="box-label">Multi-Agent Layer — Each agent has its own wallet</div>
+    <div class="sub-agents-row">
+
+      <!-- Research Agent -->
+      <div class="sub-agent-col">
+        <div class="step-badge">Step 1</div>
+        <div class="node node-sub">
+          <div class="icon">🔍</div>
+          <div class="label">Research<br/>Agent</div>
+          <div class="sublabel">Finds top AI+crypto projects</div>
+        </div>
+        <div class="cost-badge">pays 0.05 HBAR</div>
+        <div class="node node-hcs">
+          <div class="icon">📋</div>
+          <div class="label">HCS LOG</div>
+          <div class="sublabel">step:1 | paid:0.05<br/>result: 'Found 3 projects'</div>
+        </div>
+      </div>
+
+      <!-- Analysis Agent -->
+      <div class="sub-agent-col">
+        <div class="step-badge">Step 2</div>
+        <div class="node node-sub">
+          <div class="icon">🧠</div>
+          <div class="label">Analysis<br/>Agent</div>
+          <div class="sublabel">Evaluates each project</div>
+        </div>
+        <div class="cost-badge">pays 0.05 HBAR</div>
+        <div class="node node-hcs">
+          <div class="icon">📋</div>
+          <div class="label">HCS LOG</div>
+          <div class="sublabel">step:2 | paid:0.05<br/>result: 'Analyzed all'</div>
+        </div>
+      </div>
+
+      <!-- Writer Agent -->
+      <div class="sub-agent-col">
+        <div class="step-badge">Step 3</div>
+        <div class="node node-sub">
+          <div class="icon">✍️</div>
+          <div class="label">Writer<br/>Agent</div>
+          <div class="sublabel">Writes final report</div>
+        </div>
+        <div class="cost-badge">pays 0.05 HBAR</div>
+        <div class="node node-hcs">
+          <div class="icon">📋</div>
+          <div class="label">HCS LOG</div>
+          <div class="sublabel">step:3 | paid:0.05<br/>result: 'Report done'</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Merge arrows -->
+  <div style="margin: 8px 0; text-align:center; width:90%; max-width:900px;">
+    <div class="merge-arrows">
+      <div class="merge-arrow-up"></div>
+      <div class="merge-arrow-up"></div>
+      <div class="merge-arrow-up"></div>
+    </div>
+  </div>
+
+  <!-- ON CHAIN LEDGER -->
+  <div class="node node-ledger" style="min-width:280px;">
+    <div class="icon">🏦</div>
+    <div class="label">On-Chain Ledger</div>
+    <div style="display:flex; gap:20px; justify-content:center; margin-top:8px;">
+      <div>
+        <div style="font-size:9px; opacity:0.5;">TOTAL SPENT</div>
+        <div style="font-size:14px; font-weight:700;">0.15 HBAR</div>
+      </div>
+      <div style="width:1px; background:rgba(255,68,85,0.2);"></div>
+      <div>
+        <div style="font-size:9px; opacity:0.5;">REMAINING</div>
+        <div style="font-size:14px; font-weight:700; color:#00ff88;">0.85 HBAR</div>
+      </div>
+    </div>
+    <div style="font-size:9px; opacity:0.4; margin-top:6px;">Visible on HashScan in real time</div>
+  </div>
+
+  <!-- Cancel + Refund -->
+  <div style="display:flex; gap:40px; align-items:flex-start; margin: 8px 0; justify-content:center;">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+      <div style="font-size:9px; color:rgba(255,170,0,0.5); letter-spacing:2px;">④ CANCEL scheduled tx</div>
+      <div style="font-size:20px;">↙️</div>
+      <div class="node node-schedule" style="min-width:140px; opacity:0.5;">
+        <div class="label" style="text-decoration:line-through;">Scheduled TX</div>
+        <div class="sublabel">Cancelled early</div>
+      </div>
+    </div>
+    <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+      <div style="font-size:9px; color:rgba(0,255,136,0.5); letter-spacing:2px;">⑤ REFUND 0.85 HBAR</div>
+      <div style="font-size:20px;">↗️</div>
+      <div class="node node-user" style="min-width:140px;">
+        <div class="icon">👤</div>
+        <div class="label">User Wallet</div>
+        <div class="amount" style="color:#00ff88;">+0.85 HBAR</div>
+        <div class="sublabel">Auto-refunded</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- BOUNTY BADGES -->
+<div class="bounties">
+  <div class="bounty b1">✅ $5K — No Solidity</div>
+  <div class="bounty b2">✅ $5K — On-Chain Automation</div>
+  <div class="bounty b3">✅ $5K — AI + Agents</div>
+  <div class="bounty b4">✅ $5K — Best Overall</div>
+  <div class="bounty b5">✅ $2K — Futurllama Track</div>
+</div>
+
+<div style="margin-top:16px; font-size:9px; color:#1a2a1a; letter-spacing:2px; text-transform:uppercase;">
+  Total Target: $22,000
+</div>
+
+</body>
+</html>
