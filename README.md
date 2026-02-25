@@ -5,6 +5,10 @@
 Drop a GitHub link. Four AI agents decompose your codebase, explain it in plain English, flag risks, generate a CEO deck — and every agent gets paid in real HBAR, on-chain, in real time.
 
 ---
+# PayStream — Codebase Intelligence Platform  
+**Live Demo:** [https://paystreamhbar.vercel.app/](https://paystreamhbar.vercel.app/)
+
+> **ETHDenver 2026 Hackathon Project**
 
 ## What It Does
 
